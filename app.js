@@ -7,11 +7,19 @@ const reportsRoute = require('./routes/reports.js')
 const patientRoute = require('./routes/patients.js')
 const doctorRoute = require('./routes/doctors.js');
 const Patient = require('./models/patient.js');
-const swaggerJsdoc = require('swagger-jsdoc');
-const fs = require('fs');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 const app = express();
+const cors = require("cors");
+const morgan = require("morgan");
 
-const options = {
+const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
+
+app.use(morgan("dev"));
+app.use(cors());
+
+const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
@@ -22,19 +30,14 @@ const options = {
   apis: ['./controllers/api/v1/*.js'],
 };
 
-const specs = swaggerJsdoc(options);
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
 
-fs.writeFileSync('swagger.json', JSON.stringify(specs, null, 2));
-
-app.get('/swagger.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.sendFile(__dirname + '/swagger.json');
-});
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocs, { customCssUrl: CSS_URL }));
 
 //redirecting routes
 app.use('/report', reportsRoute);
