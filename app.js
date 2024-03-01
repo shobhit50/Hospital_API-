@@ -12,7 +12,6 @@ const swaggerUi = require('swagger-ui-express');
 const path = require('path');
 const app = express();
 
-
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -26,23 +25,26 @@ const swaggerOptions = {
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
-
-
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
 
+app.use('/', swaggerUi.serve);
+app.get('/', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(swaggerUi.generateHTML(swaggerDocs));
+});
 
-
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerDocs);
+});
 
 //redirecting routes
 app.use('/report', reportsRoute);
 app.use('/patient', patientRoute);
 app.use('/doctor', doctorRoute);
-
-
 
 app.listen(port, function (err) {
   if (err) { console.log('error'); return; }
