@@ -7,12 +7,11 @@ const reportsRoute = require('./routes/reports.js')
 const patientRoute = require('./routes/patients.js')
 const doctorRoute = require('./routes/doctors.js');
 const Patient = require('./models/patient.js');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-const path = require('path');
+const swaggerJsdoc = require('swagger-jsdoc');
+const fs = require('fs');
 const app = express();
 
-const swaggerOptions = {
+const options = {
   definition: {
     openapi: '3.0.0',
     info: {
@@ -23,22 +22,18 @@ const swaggerOptions = {
   apis: ['./controllers/api/v1/*.js'],
 };
 
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
+const specs = swaggerJsdoc(options);
 
 app.use(express.json());
 app.use(express.urlencoded({
   extended: true
 }));
 
-app.use('/', swaggerUi.serve);
-app.get('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.send(swaggerUi.generateHTML(swaggerDocs));
-});
+fs.writeFileSync('swagger.json', JSON.stringify(specs, null, 2));
 
 app.get('/swagger.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerDocs);
+  res.sendFile(__dirname + '/swagger.json');
 });
 
 //redirecting routes
